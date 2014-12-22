@@ -14,6 +14,6 @@ ADD config/logstash.conf /etc/logstash/conf.d/logstash.conf
 
 # Start logstash
 USER root
-CMD /usr/local/bin/start_logstash.sh
+CMD /usr/local/bin/run.sh
 # Kibana
 EXPOSE 9292
