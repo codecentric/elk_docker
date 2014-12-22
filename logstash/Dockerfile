@@ -7,8 +7,8 @@ RUN ["yum", "install", "-y", "/usr/bin/which"]
 RUN ["yum", "install", "-y", "jre >= 1.6.0", "/usr/bin/which"]
 RUN ["yum", "install", "-y", "logstash"]
 VOLUME ["/opt/conf"]
-ADD start_logstash.sh /usr/local/bin/start_logstash.sh
-RUN chmod -R 755 /usr/local/bin/start_logstash.sh
+ADD run.sh /usr/local/bin/run.sh
+RUN chmod -R 755 /usr/local/bin/run.sh
 USER logstash
 ADD config/logstash.conf /etc/logstash/conf.d/logstash.conf
 
