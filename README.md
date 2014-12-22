@@ -33,10 +33,15 @@ Start a container for Kibana link it to elasticsearch
 ```
 With the last command you can find out which ip the container is using. Enter it into your browser.
 For testing start an container for logging:
+```
   *#/sudo docker run --name logger --link elasticsearch:elasticsearch -t -i adaman79/logstash /bin/bash
+```
 Inside the container start logstash as follows:
+```
   *#/cd opt/logstash/bin
   *#/./logstash agent -f /etc/logstash/conf.d/logstash.conf
+```
+
 Enter something like "Hello World"
 Refresh you timespan at the kibana dashboard and see the log
 
