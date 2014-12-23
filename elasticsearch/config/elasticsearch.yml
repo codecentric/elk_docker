@@ -7,4 +7,4 @@ cluster:
   name: felmas
 # Set up CORS for read-only access
 http.cors.enabled: true
-http.cors.allow-origin: *
+http.cors.allow-origin: "*"
