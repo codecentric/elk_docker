@@ -4,6 +4,7 @@ MAINTAINER Felix Massem <felix.massem@codecentric.de> 19.12.2014 16:26
 ENV ES_PKG_NAME elasticsearch-1.4.2
 RUN ["yum", "install", "-y", "/usr/bin/which"]
 RUN ["yum", "install", "-y", "wget", "/usr/bin/which"]
+RUN ["yum", "install", "-y", "tar", "/usr/bin/which"]
 RUN ["yum", "install", "-y", "jre >= 1.6.0", "/usr/bin/which"]
 
 # Install ElasticSearch.
