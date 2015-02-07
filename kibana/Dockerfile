@@ -1,12 +1,27 @@
-FROM fedora:latest
-MAINTAINER Felix Massem <felix.massem@codecentric.de> 08.12.2014 14:58
+FROM fedora:21
 
-RUN yum install -y nginx wget tar
-RUN wget https://download.elasticsearch.org/kibana/kibana/kibana-3.1.0.tar.gz -O /tmp/kibana.tar.gz && \
-    tar zxf /tmp/kibana.tar.gz && mv kibana-3.1.0/* /usr/share/nginx/html
-ADD run.sh /usr/local/bin/run.sh
+MAINTAINER Olaf Goerlitz
+
+RUN \
+  yum -y -q update && \
+  yum -y -q install \
+    wget \
+    tar \
+    nginx
+
+ENV KIBANA_VERSION 3.1.2
+
+# install kibana app in nginx
+RUN \
+  wget -q https://download.elasticsearch.org/kibana/kibana/kibana-$KIBANA_VERSION.tar.gz -O /tmp/kibana.tar.gz && \
+  tar zxf /tmp/kibana.tar.gz --strip 1 -C /usr/share/nginx/html
+
+# replace nginx configuration with custom settings
 ADD config/nginx.conf /etc/nginx/nginx.conf
-RUN chmod -R 755 /usr/local/bin/run.sh
 
-CMD ["/usr/local/bin/run.sh"]
+# set logstash dashboard as default
+RUN mv /usr/share/nginx/html/app/dashboards/logstash.json /usr/share/nginx/html/app/dashboards/default.json
+
+CMD ["nginx"]
+
 EXPOSE 80
