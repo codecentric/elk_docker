@@ -1,6 +1,6 @@
 FROM fedora:21
 
-MAINTAINER Olaf Goerlitz
+MAINTAINER Felix Massem <felix.massem@codecentric.de>, Olaf Goerlitz <olaf.goerlitz@gmail.com>
 
 RUN \
   yum -y -q update && \

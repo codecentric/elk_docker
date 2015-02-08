@@ -1,19 +1,22 @@
-FROM fedora:latest
-MAINTAINER Felix Massem <felix.massem@codecentric.de> 08.12.2014 14:58
+FROM fedora:21
 
-RUN ["rpm", "--import", "http://packages.elasticsearch.org/GPG-KEY-elasticsearch"]
-COPY logstash.repo /etc/yum.repos.d/
-RUN ["yum", "install", "-y", "/usr/bin/which"]
-RUN ["yum", "install", "-y", "jre >= 1.6.0", "/usr/bin/which"]
-RUN ["yum", "install", "-y", "logstash"]
-VOLUME ["/opt/conf"]
-ADD run.sh /usr/local/bin/run.sh
-RUN chmod -R 755 /usr/local/bin/run.sh
-USER logstash
-ADD config/logstash.conf /etc/logstash/conf.d/logstash.conf
+MAINTAINER Felix Massem <felix.massem@codecentric.de>, Olaf Goerlitz <olaf.goerlitz@gmail.com>
 
-# Start logstash
-USER root
-CMD /usr/local/bin/run.sh
-# Kibana
-EXPOSE 9292
+RUN \
+  yum -y -q update && \
+  yum -y -q install \
+    wget \
+    tar \
+    jre >= 1.8.0
+
+# install logstash, c.f. http://www.logstash.net/docs/1.4.2/repositories
+ADD logstash.repo /etc/yum.repos.d/
+RUN \
+  rpm --import http://packages.elasticsearch.org/GPG-KEY-elasticsearch && \
+  yum install -y -q logstash
+
+# create volumes for the configuration folder (which allows for updating logstash.conf
+# and restarting the container) and for the watched log folder
+VOLUME [ "/opt/conf/logstash", "/var/logstash/logs" ]
+
+CMD [ "/opt/logstash/bin/logstash", "agent", "-f", "/opt/conf/logstash/logstash.conf" ]
