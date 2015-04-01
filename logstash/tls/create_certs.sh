@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # create CA certificate and server TLS certificate (act as a CA authority)
+# (cf. https://help.ubuntu.com/community/GnuTLS)
 
 TLS_KEY_DIR=/etc/pki/tls/private
 TLS_CRT_DIR=/etc/pki/tls/certs
