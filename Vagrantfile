@@ -10,7 +10,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # define forwarded ports
   config.vm.network "forwarded_port", guest: 80,   host: 8080   # kibana dashboard (use port 8080 instead of 80)
   config.vm.network "forwarded_port", guest: 5000, host: 5000   # logstash log forwarding (TLS-protected port)
-  config.vm.network "forwarded_port", guest: 9200, host: 9200   # elastisearch REST API used by kibana
+  config.vm.network "forwarded_port", guest: 9200, host: 9200   # elastisearch REST API accessed by kibana
 
   # adjust VM configuration
   config.vm.provider "virtualbox" do |vb|
@@ -22,15 +22,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # build and run docker containers for elk stack
   config.vm.provision "docker" do |docker|
 
-    # Build docker images tagged with component name (each 'Dockerfile' is located in the respective sub folder).
-    # Vagrant automatically shares the local folder (containing the Vagrantfile) as '/vagrant' within the guest machine.
+    # Build docker images from Dockerfiles located in the respective sub directories.
+    # Vagrant automatically mounts the current directory as '/vagrant' in the guest machine.
     docker.build_image "/vagrant/elasticsearch", args: "--tag elasticsearch"
     docker.build_image "/vagrant/logstash",      args: "--tag logstash"
     docker.build_image "/vagrant/kibana",        args: "--tag kibana"
 
     # Start docker containers (automatically deamonized and using the image name as container name)
     docker.run "elasticsearch", args: "-p 9200:9200"
-    docker.run "logstash",      args: "-p 5000:5000 --link elasticsearch:elasticsearch -v /vagrant/logstash/config:/opt/conf/logstash -v /vagrant/logs:/var/logstash/logs"
+    docker.run "logstash",      args: "-p 5000:5000 --link elasticsearch:elasticsearch -v /vagrant/logstash/config:/conf -v /vagrant/logs:/var/logstash/logs"
     docker.run "kibana",        args: "-p 80:80"
 
   end
@@ -38,13 +38,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # suppress tty error when using shell provisioning (cf. https://github.com/mitchellh/vagrant/issues/1673)
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
 
-  # export logstash CA certificate to NXlog
+  # copy logstash's CA certificate to local directory
   config.vm.provision "shell", inline: "docker cp logstash:/etc/pki/tls/certs/logstash-ca.crt /vagrant/nxlog/"
 
-  # build and run NXlog with mappings for configuration and log folder
+  # build docker image and run NXlog container linked to logstash
   config.vm.provision "docker" do |docker|
     docker.build_image "/vagrant/nxlog", args: "--tag nxlog"
-    docker.run "nxlog", args: "--link logstash:logstash -v /vagrant/nxlog/config:/conf -v /vagrant/logs:/logs"
+    docker.run "nxlog", args: "--link logstash:logstash -v /vagrant/nxlog/config:/conf"
   end
 
 end

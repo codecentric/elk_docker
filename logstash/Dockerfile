@@ -24,14 +24,10 @@ ADD tls /
 RUN /create_certs.sh
 
 # -----------------------------------------------------------------------------
-# define mount points for externally provided configuration and log folder
-# this allows to restart the container with an updated logstash.conf file
+# Expecting logstash configuration in a mounted data volume (/conf/logstash.conf).
+# This allows for restarting the logstash container with an updated configuration.
 
-ENV CFG_DIR /opt/conf/logstash
-ENV LOG_DIR /var/logstash/logs
-
-VOLUME [ "$CFG_DIR", "$LOG_DIR" ]
-
-CMD /opt/logstash/bin/logstash agent -f `echo ${CFG_DIR}/logstash.conf`
+CMD [ "/opt/logstash/bin/logstash", "agent", "-f", "/conf/logstash.conf" ]
 
 EXPOSE 5000
+
