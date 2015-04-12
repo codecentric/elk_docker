@@ -1,20 +1,21 @@
 elk_docker
 ==========
 
-ELK (Elasticsearch, Logstash, Kibana) as Docker Container
+ELK (Elasticsearch, Logstash, Kibana) as Docker Container.
+
+This setup allows for watching files in a local directory and log event forwarding over a TLS-secured connection.
 
 ## Automatic Container Setup
 
 This repository contains a Vagrantfile which allows for automated provisioning of a virtual machine and running all defined docker containers inside it.
 
-Just two steps are required:
+Just three steps are required:
 
 1. Install [Vagrant](https://www.vagrantup.com/)
 2. Run `vagrant up` in the directory containing the Vagrantfile
+3. Access http://localhost:5601 in your web browser to open kibana
 
-Then access http://localhost:8080 in your browser to open the kibana dashboard.
-
-To monitor and restart containers enter the virtual machine via `vagrant ssh`.
+To monitor and restart docker containers enter the virtual machine via `vagrant ssh`.
 
 ## Manual Container Setup
 
@@ -29,25 +30,26 @@ First of all, build images from all the Dockerfiles. Therefore, change dir into 
   $ sudo docker build -t kibana .
 ```
 
-Then start a container for elasticsearch, logstash, and kibana, respectively.
+Then start a container for Elasticsearch, Logstash, and Kibana, respectively.
 
 ```sh
   $ cd ..
   $ sudo docker run --name elasticsearch -d -p=9200:9200 elasticsearch
+  $ mkdir logs
   $ sudo docker run --name logstash -d -p=5000:5000 --link elasticsearch:elasticsearch \
       -v `pwd`/logstash/config:/conf -v `pwd`/logs:/var/logstash/logs logstash
-  $ sudo docker run --name kibana -d -p=80:80 kibana
+  $ sudo docker run --name kibana -d -p=5601:5601 --link elasticsearch:elasticsearch kibana
 ```
 
-Finally, go to http://localhost to see the kibana dashboard.
+Finally, go to http://localhost:5601 to access kibana.
 
 **Container Parameter Details:**
 
 * all containers are named appropriately (`--name`) and run in the background (`-d`).
-* elasticsearch exposes its service port 9200.
+* elasticsearch exposes its HTTP service port 9200.
 * logstash exposes port 5000 for (TLS-secured) log forwarding.
-* kibana makes the dashboard accessible via port 80.
-* the logstash configuration is not embedded in the docker image but mounted as a data volume under '/conf' when the container is started. Thus, the logstash configuration can updated easily and just needs a restart of the logstash container to take effect (`docker restart logstash`).
+* kibana is accessible on port 5601.
+* the logstash configuration is not embedded in the docker image but mounted as a data volume under '/conf' when the container is started. Thus, the logstash configuration can be updated easily and a restart of the logstash container is sufficient to apply the changes (`docker restart logstash`).
 * a local log file directory 'logs/' is created and mounted in the logstash container. It is watched for any added or updated log files. 
 
 **Container Inspection:**
@@ -73,7 +75,7 @@ The logstash configuration (logstash/logstash.conf) defines two input options fo
 
 ### Watching Log Files
 
-The easiest way to add log messages is to
+The easiest options for adding log messages is to
 
 * copy a line-based log file to the local 'logs/' directory, e.g.  
   `sudo cp /var/log/dmesg logs/`

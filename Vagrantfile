@@ -8,8 +8,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"
 
   # define forwarded ports
-  config.vm.network "forwarded_port", guest: 80,   host: 8080   # kibana dashboard (use port 8080 instead of 80)
-  config.vm.network "forwarded_port", guest: 5000, host: 5000   # logstash log forwarding (TLS-protected port)
+  config.vm.network "forwarded_port", guest: 5601, host: 5601   # kibana
+  config.vm.network "forwarded_port", guest: 5000, host: 5000   # logstash log forwarding (TLS-protected)
   config.vm.network "forwarded_port", guest: 9200, host: 9200   # elastisearch REST API accessed by kibana
 
   # adjust VM configuration
@@ -18,6 +18,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.memory = 2048
     vb.cpus = 2
   end
+
+  # create logs/ directory for logstash file watching
+  config.vm.provision "shell", inline: "mkdir -p /vagrant/logs"
 
   # build and run docker containers for elk stack
   config.vm.provision "docker" do |docker|
@@ -31,7 +34,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Start docker containers (automatically deamonized and using the image name as container name)
     docker.run "elasticsearch", args: "-p 9200:9200"
     docker.run "logstash",      args: "-p 5000:5000 --link elasticsearch:elasticsearch -v /vagrant/logstash/config:/conf -v /vagrant/logs:/var/logstash/logs"
-    docker.run "kibana",        args: "-p 80:80"
+    docker.run "kibana",        args: "-p 5601:5601 --link elasticsearch:elasticsearch"
 
   end
 
