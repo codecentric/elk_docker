@@ -1,0 +1,21 @@
+# X.509 Certificate options
+
+# The common name of the certificate owner.
+cn = "localhost"
+
+# In how many days, counting from today, this certificate will expire.
+# Use -1 if there is no expiration date.
+expiration_days = 700
+
+# Whether this certificate will be used for a TLS server
+tls_www_server
+
+# Whether this certificate will be used to sign data (needed
+# in TLS DHE ciphersuites).
+signing_key
+
+# Whether this certificate will be used to encrypt data (needed
+# in TLS RSA ciphersuites). Note that it is preferred to use different
+# keys for encryption and signing.
+encryption_key
+

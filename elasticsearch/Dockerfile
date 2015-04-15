@@ -1,30 +1,28 @@
-FROM fedora:latest
-MAINTAINER Felix Massem <felix.massem@codecentric.de> 19.12.2014 16:26
+FROM fedora:21
 
-ENV ES_PKG_NAME elasticsearch-1.4.2
-RUN ["yum", "install", "-y", "/usr/bin/which"]
-RUN ["yum", "install", "-y", "wget", "/usr/bin/which"]
-RUN ["yum", "install", "-y", "jre >= 1.6.0", "/usr/bin/which"]
+MAINTAINER Felix Massem <felix.massem@codecentric.de>, Olaf Goerlitz <olaf.goerlitz@gmail.com>
 
-# Install ElasticSearch.
+# Install Java
+RUN yum -y -q update
+RUN yum -y -q install jre
+
+# Install ElasticSearch (cf. http://www.elastic.co/guide/en/elasticsearch/reference/1.5/setup-repositories.html)
+ADD elasticsearch.repo /etc/yum.repos.d/
 RUN \
-cd / && \
-wget https://download.elasticsearch.org/elasticsearch/elasticsearch/$ES_PKG_NAME.tar.gz && \
-tar xvzf $ES_PKG_NAME.tar.gz && \
-rm -f $ES_PKG_NAME.tar.gz && \
-mv /$ES_PKG_NAME /opt/elasticsearch
-# Define mountable directories.
-VOLUME ["/data"]
-# Mount elasticsearch.yml config
-RUN /opt/elasticsearch/bin/plugin -i elasticsearch/marvel/latest
-RUN /opt/elasticsearch/bin/plugin -i mobz/elasticsearch-head
-ADD config/elasticsearch.yml /opt/elasticsearch/config/elasticsearch.yml
-# Define default command.
-ADD run.sh /usr/local/bin/run.sh
-RUN chmod -R 755 /usr/local/bin/run.sh
-CMD ["/usr/local/bin/run.sh"]
-# Expose ports.
-# - 9200: HTTP
-# - 9300: transport
+  rpm --import https://packages.elasticsearch.org/GPG-KEY-elasticsearch && \
+  yum install -y -q elasticsearch
+
+# Link configuration files and set /data and /logs directories
+RUN \
+  ln -s /etc/elasticsearch /usr/share/elasticsearch/config && \
+  sed -ri 's/#path.(data|logs):[^,]*$/path.\1: \/\1/' /etc/elasticsearch/elasticsearch.yml
+
+# Define data volumes for index data and log files
+VOLUME [ "/data", "/logs" ]
+
+# Elasticsearch should usually be started as a service via 'service elasticsearch start'.
+# However, there are no services running in the container. Hence, we start Elasticsearch directly.
+CMD [ "/usr/share/elasticsearch/bin/elasticsearch" ]
+
+# Expose HTTP service port only
 EXPOSE 9200
-EXPOSE 9300

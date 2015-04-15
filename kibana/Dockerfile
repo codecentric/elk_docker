@@ -1,12 +1,24 @@
-FROM fedora:latest
-MAINTAINER Felix Massem <felix.massem@codecentric.de> 08.12.2014 14:58
+FROM fedora:21
 
-RUN yum install -y nginx wget
-RUN wget https://download.elasticsearch.org/kibana/kibana/kibana-3.1.0.tar.gz -O /tmp/kibana.tar.gz && \
-    tar zxf /tmp/kibana.tar.gz && mv kibana-3.1.0/* /usr/share/nginx/html
-ADD run.sh /usr/local/bin/run.sh
-ADD config/nginx.conf /etc/nginx/nginx.conf
-RUN chmod -R 755 /usr/local/bin/run.sh
+MAINTAINER Felix Massem <felix.massem@codecentric.de>, Olaf Goerlitz <olaf.goerlitz@gmail.com>
 
-CMD ["/usr/local/bin/run.sh"]
-EXPOSE 80
+# Install wget + tar
+RUN yum -y -q update
+RUN yum -y -q install \
+  wget \
+  tar
+
+ENV KIBANA_VERSION 4.0.2-linux-x64
+
+# Install Kibana
+RUN \
+  wget -q https://download.elastic.co/kibana/kibana/kibana-$KIBANA_VERSION.tar.gz -O kibana.tar.gz && \
+  mkdir kibana && \
+  tar zxf kibana.tar.gz --owner=root --group=root --strip 1 -C /kibana
+
+# Set elasticsearch container hostname in kibana configuration
+RUN sed -i "s/localhost:/elasticsearch:/" /kibana/config/kibana.yml
+
+CMD [ "/kibana/bin/kibana" ]
+
+EXPOSE 5601

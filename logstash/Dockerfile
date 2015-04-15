@@ -1,19 +1,31 @@
-FROM fedora:latest
-MAINTAINER Felix Massem <felix.massem@codecentric.de> 08.12.2014 14:58
+FROM fedora:21
 
-RUN ["rpm", "--import", "http://packages.elasticsearch.org/GPG-KEY-elasticsearch"]
-COPY logstash.repo /etc/yum.repos.d/
-RUN ["yum", "install", "-y", "/usr/bin/which"]
-RUN ["yum", "install", "-y", "jre >= 1.6.0", "/usr/bin/which"]
-RUN ["yum", "install", "-y", "logstash"]
-VOLUME ["/opt/conf"]
-ADD run.sh /usr/local/bin/run.sh
-RUN chmod -R 755 /usr/local/bin/run.sh
-USER logstash
-ADD config/logstash.conf /etc/logstash/conf.d/logstash.conf
+MAINTAINER Felix Massem <felix.massem@codecentric.de>, Olaf Goerlitz <olaf.goerlitz@gmail.com>
 
-# Start logstash
-USER root
-CMD /usr/local/bin/run.sh
-# Kibana
-EXPOSE 9292
+# Install Java + certtool
+RUN yum -y -q update
+RUN yum -y -q install jre
+RUN yum -y -q install gnutls-utils
+
+# -----------------------------------------------------------------------------
+# Install Logstash (cf. http://www.logstash.net/docs/1.4.2/repositories)
+
+ADD logstash.repo /etc/yum.repos.d/
+RUN \
+  rpm --import https://packages.elasticsearch.org/GPG-KEY-elasticsearch && \
+  yum install -y -q logstash
+
+# -----------------------------------------------------------------------------
+# Create TLS certificates for log forwarding
+
+ADD tls /
+RUN /create_certs.sh
+
+# -----------------------------------------------------------------------------
+# Expecting logstash configuration in a mounted data volume (/conf/logstash.conf).
+# This allows for restarting the logstash container with an updated configuration.
+
+CMD [ "/opt/logstash/bin/logstash", "agent", "-f", "/conf/logstash.conf" ]
+
+# Expose TLS-secured port
+EXPOSE 5000
