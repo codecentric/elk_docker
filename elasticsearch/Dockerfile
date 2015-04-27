@@ -15,7 +15,8 @@ RUN \
 # Link configuration files and set /data and /logs directories
 RUN \
   ln -s /etc/elasticsearch /usr/share/elasticsearch/config && \
-  sed -ri 's/#path.(data|logs):[^,]*$/path.\1: \/\1/' /etc/elasticsearch/elasticsearch.yml
+  sed -ri 's/#path.(data|logs):[^,]*$/path.\1: \/\1/' /etc/elasticsearch/elasticsearch.yml && \
+  cd /usr/share/elasticsearch/bin/ && ./plugin -install mobz/elasticsearch-head
 
 # Define data volumes for index data and log files
 VOLUME [ "/data", "/logs" ]
