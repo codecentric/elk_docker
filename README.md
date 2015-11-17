@@ -8,7 +8,9 @@ Version
 ==========
 
 elasticsearch 2.0
+
 logstash 2.0
+
 kibana 4.2
 
 This setup allows for watching files in a local directory and log event forwarding over a TLS-secured connection.
