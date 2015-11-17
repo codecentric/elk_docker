@@ -8,7 +8,7 @@ RUN yum -y -q install \
   wget \
   tar
 
-ENV KIBANA_VERSION 4.0.2-linux-x64
+ENV KIBANA_VERSION 4.2.0-linux-x64
 
 # Install Kibana
 RUN \
@@ -17,7 +17,9 @@ RUN \
   tar zxf kibana.tar.gz --owner=root --group=root --strip 1 -C /kibana
 
 # Set elasticsearch container hostname in kibana configuration
-RUN sed -i "s/localhost:/elasticsearch:/" /kibana/config/kibana.yml
+#RUN sed -i "s/localhost:/elasticsearch:/" /kibana/config/kibana.yml
+RUN sed -i '$ a\
+elasticsearch.url: "http://172.17.0.1:9200"' /kibana/config/kibana.yml
 
 CMD [ "/kibana/bin/kibana" ]
 
