@@ -6,7 +6,7 @@ MAINTAINER Felix Massem <felix.massem@codecentric.de>, Olaf Goerlitz <olaf.goerl
 RUN yum -y -q update
 RUN yum -y -q install jre
 
-# Install ElasticSearch (cf. http://www.elastic.co/guide/en/elasticsearch/reference/1.5/setup-repositories.html)
+# Install ElasticSearch
 ADD elasticsearch.repo /etc/yum.repos.d/
 RUN \
   rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch && \

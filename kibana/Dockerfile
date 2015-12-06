@@ -8,7 +8,7 @@ RUN yum -y -q install \
   wget \
   tar
 
-ENV KIBANA_VERSION 4.2.0-linux-x64
+ENV KIBANA_VERSION 4.3.0-linux-x64
 
 # Install Kibana
 RUN \
